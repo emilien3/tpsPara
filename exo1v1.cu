@@ -17,14 +17,12 @@ void kernel(uint* dvec, uint size, uint* dres)
         {
             if (x%2*i == 0)
             {
-              printf("THREAD N° %u : Somme avant %u\n", x, *dres);
               printf("THREAD N° %u : Elem du vecteur : %u\n", x, dvec[x]);
-              dvec[x]+=dvec [x+i];
+              dvec[x]+= dvec [x+i];
             }
             __syncthreads(); //waiting for all the other threads to finish
         }       
     }
-        printf("THREAD N° %u : Somme actuelle %u\n", x, *dres);
 }
 
 int main(int argc, char **argv) {
