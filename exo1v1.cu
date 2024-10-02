@@ -8,13 +8,23 @@
 __global__
 void kernel(uint* dvec, uint size, uint* dres)
 {
+
+
     uint x = threadIdx.x;
-    if (x<size)
+    if (x< size)
     {
-        *dres += dvec[x];
-        printf("%u\n", dvec[x]);
+        for (uint i = 1; i < size; i*=2)
+        {
+            if (x%2*i == 0)
+            {
+              printf("THREAD N° %u : Somme avant %u\n", x, *dres);
+              printf("THREAD N° %u : Elem du vecteur : %u\n", x, dvec[x]);
+              dvec[x]+=dvec [x+i];
+            }
+            __syncthreads(); //waiting for all the other threads to finish
+        }       
     }
-    __syncthreads();
+        printf("THREAD N° %u : Somme actuelle %u\n", x, *dres);
 }
 
 int main(int argc, char **argv) {
@@ -39,7 +49,7 @@ int main(int argc, char **argv) {
     }
     fclose(f);
 
-    uint* dres; // res de la somme on device
+    uint* dres = 0; // res de la somme on device
     uint res;
     uint* dvec;
 
@@ -60,7 +70,7 @@ int main(int argc, char **argv) {
         exit(EXIT_FAILURE);
     }
 
-    kernel<<<1, BSIZE>>>(dvec, size, dres);
+    kernel<<<(size +1023 )/BSIZE, BSIZE>>>(dvec, size, dres);
 
     cudaMemcpy(&res, dres, sizeof(int), cudaMemcpyDeviceToHost);
     // dst, src, byte, kind of copy
